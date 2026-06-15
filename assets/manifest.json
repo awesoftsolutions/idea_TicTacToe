@@ -1,4 +1,158 @@
 {
+  "team1_cell": {
+    "key": "team1_cell",
+    "file": "sprites/team1_cell.png",
+    "prompt": "Chunky Kawaii kitten sprite, round pink head, pointy ears, 4px outline, sitting pose on transparent background",
+    "width": 120,
+    "height": 120
+  },
+  "team1_wiggle": {
+    "key": "team1_wiggle",
+    "file": "sprites/team1_wiggle.png",
+    "prompt": "Chunky Kawaii kitten sprite, round pink head, pointy ears slightly tilted, ear wiggle animation frame, 4px outline",
+    "width": 120,
+    "height": 120
+  },
+  "team1_celebrate": {
+    "key": "team1_celebrate",
+    "file": "sprites/team1_celebrate.png",
+    "prompt": "Chunky Kawaii kitten sprite, paws raised in celebration, wide happy eyes, big smile, 4px outline",
+    "width": 120,
+    "height": 120
+  },
+  "team2_cell": {
+    "key": "team2_cell",
+    "file": "sprites/team2_cell.png",
+    "prompt": "Chunky Kawaii puppy sprite, round mint head, floppy ears, 4px outline, sitting pose on transparent background",
+    "width": 120,
+    "height": 120
+  },
+  "team2_wiggle": {
+    "key": "team2_wiggle",
+    "file": "sprites/team2_wiggle.png",
+    "prompt": "Chunky Kawaii puppy sprite, round mint head, tail wagging, 4px outline, idle animation frame",
+    "width": 120,
+    "height": 120
+  },
+  "team2_celebrate": {
+    "key": "team2_celebrate",
+    "file": "sprites/team2_celebrate.png",
+    "prompt": "Chunky Kawaii puppy sprite, excited play-bow pose, wide eyes, big smile, 4px outline",
+    "width": 120,
+    "height": 120
+  },
+  "coach_wave": {
+    "key": "coach_wave",
+    "file": "sprites/coach_wave.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, one paw raised waving, welcoming expression, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "coach_point": {
+    "key": "coach_point",
+    "file": "sprites/coach_point.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, paw pointing forward, thinking squinted-eye expression, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "coach_cheer_small": {
+    "key": "coach_cheer_small",
+    "file": "sprites/coach_cheer_small.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, soft encouraging smile, slight paw raise, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "coach_cheer": {
+    "key": "coach_cheer",
+    "file": "sprites/coach_cheer.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, both paws raised celebrating, wide eyes, big grin, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "coach_aww": {
+    "key": "coach_aww",
+    "file": "sprites/coach_aww.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, tilted head, sympathetic soft eyes, consoling expression, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "coach_idle": {
+    "key": "coach_idle",
+    "file": "sprites/coach_idle.png",
+    "prompt": "Chunky Kawaii coach critter sprite, lavender base, neutral expression, hands at sides, small smile, 4px outline",
+    "width": 200,
+    "height": 200
+  },
+  "bg_team_select": {
+    "key": "bg_team_select",
+    "file": "sprites/bg_team_select.png",
+    "prompt": "Chunky Kawaii team select background, lavender and butter gradient bands, decorative circles, 960x720",
+    "width": 960,
+    "height": 720
+  },
+  "bg_game": {
+    "key": "bg_game",
+    "file": "sprites/bg_game.png",
+    "prompt": "Chunky Kawaii game scene background, sky blue and mint gradient bands, grass strip at bottom, 960x720",
+    "width": 960,
+    "height": 720
+  },
+  "bg_celebration": {
+    "key": "bg_celebration",
+    "file": "sprites/bg_celebration.png",
+    "prompt": "Chunky Kawaii celebration background, pink and butter gradient bands, sparkle star accents everywhere, 960x720",
+    "width": 960,
+    "height": 720
+  },
+  "sparkle": {
+    "key": "sparkle",
+    "file": "sprites/sparkle.png",
+    "prompt": "Chunky Kawaii sparkle particle, 4-point star with rounded tips, periwinkle base, 32x32",
+    "width": 32,
+    "height": 32
+  },
+  "confetti": {
+    "key": "confetti",
+    "file": "sprites/confetti.png",
+    "prompt": "Chunky Kawaii confetti particle, rounded rectangle, butter base, 16x16",
+    "width": 16,
+    "height": 16
+  },
+  "heart": {
+    "key": "heart",
+    "file": "sprites/heart.png",
+    "prompt": "Chunky Kawaii heart shape, primary pink, two circles with triangle point, 24x24",
+    "width": 24,
+    "height": 24
+  },
+  "star": {
+    "key": "star",
+    "file": "sprites/star.png",
+    "prompt": "Chunky Kawaii star shape, 5-point star, butter base, 24x24",
+    "width": 24,
+    "height": 24
+  },
+  "btn_start": {
+    "key": "btn_start",
+    "file": "sprites/btn_start.png",
+    "prompt": "Chunky Kawaii pill-shaped start button, periwinkle base, lighter inner area for text, 200x60",
+    "width": 200,
+    "height": 60
+  },
+  "btn_play_again": {
+    "key": "btn_play_again",
+    "file": "sprites/btn_play_again.png",
+    "prompt": "Chunky Kawaii pill-shaped play again button, primary pink base, lighter inner area for text, 200x60",
+    "width": 200,
+    "height": 60
+  },
+  "board_frame": {
+    "key": "board_frame",
+    "file": "sprites/board_frame.png",
+    "prompt": "Chunky Kawaii garden fence board frame, periwinkle pickets, two horizontal rails, rounded tops, 440x440",
+    "width": 440,
+    "height": 440
+  },
   "poc": {
     "key": "poc",
     "file": "sprites/poc.png",
