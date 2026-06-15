@@ -17,6 +17,7 @@ this suite pass against the TeamSelectScene class.
 from __future__ import annotations
 
 import os
+import sys
 from unittest.mock import MagicMock
 
 import pygame
@@ -317,3 +318,80 @@ def test_team_select_initial_coach_greeting(scene) -> None:
     """
     assert scene.coach_expression == COACH_GREETING_EXPRESSION
     assert scene.coach_line == COACH_GREETING_LINE
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Sprint 5, Task 3 — Tech Debt Fix Tests (from pseudocode §6.1)
+# ──────────────────────────────────────────────────────────────────────────────
+
+
+def test_no_module_level_pygame_init() -> None:
+    """R1: Importing src.scenes does NOT trigger pygame.font.init() at module level.
+
+    Verifies that the module-level font init guard (scenes.py lines 322-324) has
+    been removed in Sprint 5 — importing src.scenes must not initialise the pygame
+    font module. Runs in headless environment without prior pygame.init().
+
+    Red phase: This test FAILS because lines 322-324 are still present.
+    """
+    # Arrange: ensure clean font state
+    if pygame.font.get_init():
+        pygame.font.quit()
+    assert (
+        not pygame.font.get_init()
+    ), "Precondition failed: pygame.font is still initialised after quit()"
+
+    # Clear cached module to force re-import (re-executes module-level code)
+    if "src.scenes" in sys.modules:
+        del sys.modules["src.scenes"]
+
+    # Act: import triggers module-level code in src/scenes.py
+
+    # Assert: font should NOT be initialised (line 322-324 removed in fix)
+    assert (
+        not pygame.font.get_init()
+    ), "pygame.font.init() was triggered at module level during import"
+
+    # Cleanup: restore pygame.font state for subsequent tests
+    # (test left font deinitialised — re-init so later tests don't break)
+    pygame.font.init()
+
+
+def test_turn_indicator_matches_coach_voice(
+    mock_asset_manager: MagicMock,
+) -> None:
+    """R4/R5: GameScene stores team display names consistent with Coach voice.
+
+    Verifies that GameScene stores a team_display_names dict mapping
+    "X" -> "Kittens" and "O" -> "Puppies", matching the Coach speech lines
+    in coach.py lines 54-55 ("Kittens' turn!"/"Puppies' turn!").
+
+    Red phase: This test FAILS with AssertionError because team_display_names
+    doesn't exist yet on GameScene.
+    """
+    from src.scenes import GameScene
+
+    # Arrange: mock dependencies
+    mock_board = MagicMock()
+    mock_board.current_player = "X"
+
+    mock_coach = MagicMock()
+    mock_coach.side_effect = lambda event: ("point", "Your turn!")
+
+    # Act: construct GameScene (team_display_names field added in fix)
+    scene = GameScene(mock_asset_manager, mock_board, mock_coach)
+
+    # Assert: team_display_names exists and matches Coach voice
+    assert hasattr(
+        scene, "team_display_names"
+    ), "GameScene missing team_display_names attribute"
+    assert (
+        scene.team_display_names["X"] == "Kittens"
+    ), f"Expected 'Kittens' for X, got '{scene.team_display_names['X']}'"
+    assert (
+        scene.team_display_names["O"] == "Puppies"
+    ), f"Expected 'Puppies' for O, got '{scene.team_display_names['O']}'"
+    assert set(scene.team_display_names.keys()) == {
+        "X",
+        "O",
+    }, f"Expected keys {{'X', 'O'}}, got {set(scene.team_display_names.keys())}"

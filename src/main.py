@@ -103,16 +103,16 @@ def main() -> None:
     # ── 3.3.3 Board and Coach ────────────────────────────────────────────
     board = Board()
 
-    # ── 3.3.4 Scene Construction with Dependency Injection ───────────────
+    # ── 3.3.4 Scene Construction with Dependency Injection ──────────────────
     team_select = TeamSelectScene(assets, event_to_reaction)
     game = GameScene(assets, board, event_to_reaction)
-    celebration = CelebrationScene(assets, board, event_to_reaction, "X")
+    # CelebrationScene is NOT constructed here — it is constructed on-demand
+    # during the game->celebration transition (lines 149-157 below).
 
-    # ── 3.3.5 Scene Manager ──────────────────────────────────────────────
+    # ── 3.3.5 Scene Manager ───────────────────────────────────────────────
     scenes: dict[str, object] = {
         "team_select": team_select,
         "game": game,
-        "celebration": celebration,
     }
     current_scene: str = "team_select"
 

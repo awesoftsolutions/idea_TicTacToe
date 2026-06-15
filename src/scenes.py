@@ -11,11 +11,19 @@ Module-level constants define sprite positioning for the TeamSelectScene layout.
 # CHANGELOG:
 # - Sprint 4, Task 2 — TeamSelectScene + render_speech_bubble
 # - Sprint 4, Task 3 — GameScene class
+# - Sprint 4, Task 4 — CelebrationScene class
 
 from __future__ import annotations
 
 import pygame
+import pygame.color  # noqa: F401 — force pygame.color submodule into the
 
+# pygame namespace so that pygame.font.Font (and other C extensions that
+# reference pygame.color.Color internally) do not trigger a lazy-load
+# circular import during test execution.
+import pygame.font  # noqa: F401 — same reason: ensure font submodule is
+
+# available before any scene constructor tries to use SysFont.
 from src.game import Board, BoardResult
 from src.sprite_config import OUTLINE_COLOR, OUTLINE_WIDTH, PALETTE
 
@@ -318,11 +326,6 @@ class TeamSelectScene:
 # CHANGELOG: Sprint 4, Task 4 — CelebrationScene class
 
 
-# Ensure the pygame font module is initialised (needed by SysFont calls below).
-if not pygame.font.get_init():
-    pygame.font.init()
-
-
 class CelebrationScene:
     """Celebration scene displayed after a win or draw.
 
@@ -390,7 +393,9 @@ class CelebrationScene:
         self._btn_sprite = self._asset_manager.get_sprite("btn_play_again")
         self._btn_size = self._asset_manager.get_sprite_size("btn_play_again")
 
-        # Step 8: Create fonts
+        # Step 8: Initialise font for text rendering (matches TeamSelectScene
+        #         and GameScene pattern — SysFont does not auto-init)
+        pygame.font.init()
         self._font_large = pygame.font.SysFont(None, 48)  # tie text
         self._font_small = pygame.font.SysFont(None, 20)  # overlay/instruction
         self._font_bubble = pygame.font.SysFont(None, 24)  # speech bubble
@@ -569,6 +574,12 @@ class GameScene:
         self.team_assignments: dict[str, str] = {
             "X": "team1",
             "O": "team2",
+        }
+
+        # Step 2b: Map board marks to team display names (matching Coach voice)
+        self.team_display_names: dict[str, str] = {
+            "X": "Kittens",
+            "O": "Puppies",
         }
 
         # Step 3: Initial Coach reaction for the starting player's turn
@@ -754,11 +765,9 @@ class GameScene:
             font=None,
         )
 
-        # Layer 6: Turn indicator
-        if self.board.current_player == "X":
-            turn_text = "Team 1's turn"
-        else:
-            turn_text = "Team 2's turn"
+        # Layer 6: Turn indicator (use team display names matching Coach voice)
+        team_name = self.team_display_names[self.board.current_player]
+        turn_text = f"{team_name}' turn"
         text_surface = self.font.render(turn_text, True, OUTLINE_COLOR)
         text_rect = text_surface.get_rect()
         text_rect.topleft = (
