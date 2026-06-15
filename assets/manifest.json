@@ -1,0 +1,9 @@
+{
+  "poc": {
+    "key": "poc",
+    "file": "sprites/poc.png",
+    "prompt": "5-point gold star on transparent background, star shape drawn with golden-ratio polygon, inner highlight in lighter gold",
+    "width": 120,
+    "height": 120
+  }
+}
