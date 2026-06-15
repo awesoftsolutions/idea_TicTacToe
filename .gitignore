@@ -1,0 +1,31 @@
+# Favur workflow artifacts
+.favur/
+
+# Python bytecode
+__pycache__/
+*.pyc
+*.pyo
+
+# Virtual environments
+.venv/
+
+# Environment files
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache directories
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Package distribution
+*.egg-info/
+dist/
+build/
+
+# IDE files
+.vscode/
+.idea/
