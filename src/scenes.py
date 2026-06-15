@@ -182,9 +182,7 @@ class TeamSelectScene:
         # Step 3: Cache the Coach greeting reaction
         self.coach_expression: str
         self.coach_line: str
-        self.coach_expression, self.coach_line = self.get_coach_reaction(
-            "greeting"
-        )
+        self.coach_expression, self.coach_line = self.get_coach_reaction("greeting")
 
         # Step 4: Initialise font for text rendering
         pygame.font.init()
@@ -309,9 +307,7 @@ class TeamSelectScene:
             surface.blit(start_sprite, (BTN_START_X, BTN_START_Y))
 
         # Step 6: Draw scene name overlay in top-left corner
-        overlay_surface = self.font.render(
-            "Team Select", True, SPEECH_OUTLINE_COLOR
-        )
+        overlay_surface = self.font.render("Team Select", True, SPEECH_OUTLINE_COLOR)
         surface.blit(overlay_surface, (SCENE_OVERLAY_X, SCENE_OVERLAY_Y))
 
 
@@ -395,8 +391,8 @@ class CelebrationScene:
         self._btn_size = self._asset_manager.get_sprite_size("btn_play_again")
 
         # Step 8: Create fonts
-        self._font_large = pygame.font.SysFont(None, 48)   # tie text
-        self._font_small = pygame.font.SysFont(None, 20)   # overlay/instruction
+        self._font_large = pygame.font.SysFont(None, 48)  # tie text
+        self._font_small = pygame.font.SysFont(None, 20)  # overlay/instruction
         self._font_bubble = pygame.font.SysFont(None, 24)  # speech bubble
 
         # Step 9: Compute button position (centred horizontally, bottom third)
@@ -492,7 +488,9 @@ class CelebrationScene:
             # Draw: render "It's a tie!" text centred
             tie_text = "It's a tie!"
             text_surface = self._font_large.render(
-                tie_text, True, OUTLINE_COLOR,
+                tie_text,
+                True,
+                OUTLINE_COLOR,
             )
             text_x = (WINDOW_WIDTH // 2) - (text_surface.get_width() // 2)
             text_y = (WINDOW_HEIGHT // 2) - (text_surface.get_height() // 2) - 60
@@ -516,7 +514,9 @@ class CelebrationScene:
         # Layer 6: Instruction text below button
         instruction_text = "Press R or click Play Again to restart"
         instr_surface = self._font_small.render(
-            instruction_text, True, OUTLINE_COLOR,
+            instruction_text,
+            True,
+            OUTLINE_COLOR,
         )
         instr_x = (WINDOW_WIDTH // 2) - (instr_surface.get_width() // 2)
         instr_y = self._btn_y + self._btn_size[1] + 10
@@ -525,7 +525,9 @@ class CelebrationScene:
         # Layer 7: Scene name overlay (top-left corner)
         overlay_text = "Celebration"
         overlay_surface = self._font_small.render(
-            overlay_text, True, OUTLINE_COLOR,
+            overlay_text,
+            True,
+            OUTLINE_COLOR,
         )
         surface.blit(overlay_surface, (8, 8))
 
@@ -604,14 +606,15 @@ class GameScene:
             # Check for win or draw
             winner_result = self.board.winner()
             if winner_result in ("X", "O"):
-                self.coach_reaction = self.get_coach_reaction(
-                    f"win:{winner_result}"
-                )
+                self.coach_reaction = self.get_coach_reaction(f"win:{winner_result}")
                 return "celebration"
             if winner_result == "draw":
                 self.coach_reaction = self.get_coach_reaction("draw")
                 return "celebration"
-            # Game continues — leave coach_reaction at move_placed reaction
+            # Game continues — update coach_reaction to next turn call
+            self.coach_reaction = self.get_coach_reaction(
+                f"turn:{self.board.current_player}"
+            )
             return None
 
         # OCCUPIED or INVALID — friendly no-op
@@ -764,19 +767,17 @@ class GameScene:
         )
         # Semi-transparent background behind turn text
         bg_rect = text_rect.inflate(8, 4)
-        pygame.draw.rect(
-            surface, (*PALETTE["butter"][:3], 180), bg_rect
-        )
+        pygame.draw.rect(surface, (*PALETTE["butter"][:3], 180), bg_rect)
         surface.blit(text_surface, text_rect)
 
         # Layer 7: Scene name overlay "Game" in top-left corner
         overlay_surface = self.font.render(
-            "Game", True, OUTLINE_COLOR,
+            "Game",
+            True,
+            OUTLINE_COLOR,
         )
         overlay_rect = overlay_surface.get_rect()
         overlay_rect.topleft = (10, 10)
         bg_overlay_rect = overlay_rect.inflate(8, 4)
-        pygame.draw.rect(
-            surface, (*PALETTE["butter"][:3], 180), bg_overlay_rect
-        )
+        pygame.draw.rect(surface, (*PALETTE["butter"][:3], 180), bg_overlay_rect)
         surface.blit(overlay_surface, overlay_rect)
