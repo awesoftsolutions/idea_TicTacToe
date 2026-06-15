@@ -9,7 +9,6 @@ from pathlib import Path
 import pygame
 import pytest  # noqa: F401  # imported for pytest framework availability
 
-
 # === Manifest Validation ===
 
 
@@ -107,12 +106,12 @@ def test_proof_of_concept_size() -> None:
     actual_height = loaded_surface.get_height()
 
     # Step 3: Assert dimensions match
-    assert actual_width == expected_width, (
-        f"Width mismatch: expected {expected_width}, got {actual_width}"
-    )
-    assert actual_height == expected_height, (
-        f"Height mismatch: expected {expected_height}, got {actual_height}"
-    )
+    assert (
+        actual_width == expected_width
+    ), f"Width mismatch: expected {expected_width}, got {actual_width}"
+    assert (
+        actual_height == expected_height
+    ), f"Height mismatch: expected {expected_height}, got {actual_height}"
 
 
 # === README Validation ===
@@ -129,21 +128,15 @@ def test_readme_contains_style_guide() -> None:
     readme_content = readme_path.read_text(encoding="utf-8")
 
     # Step 3: Assert Style Guide heading exists
-    assert "## Style Guide" in readme_content, (
-        "README missing '## Style Guide' section"
-    )
+    assert "## Style Guide" in readme_content, "README missing '## Style Guide' section"
 
     # Step 4: Assert at least one palette hex code exists via regex
     hex_pattern = r"#[0-9A-Fa-f]{6}"
     hex_matches = re.findall(hex_pattern, readme_content)
-    assert len(hex_matches) >= 1, (
-        "README Style Guide section missing palette hex codes"
-    )
+    assert len(hex_matches) >= 1, "README Style Guide section missing palette hex codes"
 
     # Step 5: Verify the Chunky Kawaii outline color is present
-    assert "#5A4A5C" in readme_content, (
-        "README missing outline color #5A4A5C"
-    )
+    assert "#5A4A5C" in readme_content, "README missing outline color #5A4A5C"
 
 
 def test_readme_lists_rejected_alternatives() -> None:
@@ -154,11 +147,131 @@ def test_readme_lists_rejected_alternatives() -> None:
     readme_content = readme_path.read_text(encoding="utf-8")
 
     # Step 2: Assert presence of rejected alternatives heading
-    assert "### Rejected Alternatives" in readme_content, (
-        "README missing 'Rejected Alternatives' section"
-    )
+    assert (
+        "### Rejected Alternatives" in readme_content
+    ), "README missing 'Rejected Alternatives' section"
 
     # Step 3: Assert at least one "Rejected:" prefix in subheadings
-    assert "Rejected:" in readme_content, (
-        "README missing any 'Rejected:' alternative entries"
-    )
+    assert (
+        "Rejected:" in readme_content
+    ), "README missing any 'Rejected:' alternative entries"
+
+
+# === AssetManager Tests ===
+# Sprint 3, Task 3 — TDD red phase (AssetManager not yet implemented)
+
+import tempfile
+
+from src.assets import AssetLoadError, AssetManager, ManifestMissingError
+
+ALL_MANIFEST_KEYS = [
+    "team1_cell",
+    "team1_wiggle",
+    "team1_celebrate",
+    "team2_cell",
+    "team2_wiggle",
+    "team2_celebrate",
+    "coach_wave",
+    "coach_point",
+    "coach_cheer_small",
+    "coach_cheer",
+    "coach_aww",
+    "coach_idle",
+    "bg_team_select",
+    "bg_game",
+    "bg_celebration",
+    "sparkle",
+    "confetti",
+    "heart",
+    "star",
+    "btn_start",
+    "btn_play_again",
+    "board_frame",
+    "poc",
+]
+
+
+def test_asset_manager_loads_valid_manifest() -> None:
+    """Construct AssetManager with valid manifest — no exception expected."""
+    manager = AssetManager("assets/manifest.json")
+    assert len(manager._sprites) > 0
+
+
+def test_asset_manager_get_sprite_returns_surface() -> None:
+    """get_sprite('team1_cell') returns pygame.Surface with correct dimensions."""
+    manager = AssetManager("assets/manifest.json")
+    surface = manager.get_sprite("team1_cell")
+    assert isinstance(surface, pygame.Surface)
+    assert surface.get_width() == 120
+    assert surface.get_height() == 120
+
+
+def test_asset_manager_get_sprite_size_returns_tuple() -> None:
+    """get_sprite_size('team1_cell') returns (120, 120)."""
+    manager = AssetManager("assets/manifest.json")
+    dimensions = manager.get_sprite_size("team1_cell")
+    assert dimensions == (120, 120)
+
+
+def test_asset_manager_raises_on_missing_key() -> None:
+    """get_sprite('nonexistent') raises KeyError with key name."""
+    manager = AssetManager("assets/manifest.json")
+    with pytest.raises(KeyError, match="nonexistent"):
+        manager.get_sprite("nonexistent")
+
+
+def test_asset_manager_raises_on_missing_manifest() -> None:
+    """AssetManager with nonexistent path raises ManifestMissingError."""
+    with pytest.raises(ManifestMissingError, match="missing.json"):
+        AssetManager("assets/missing.json")
+
+
+def test_asset_manager_raises_on_missing_file() -> None:
+    """AssetManager with manifest to missing PNG raises AssetLoadError with key name."""
+    manifest_data = {
+        "missing_sprite": {
+            "key": "missing_sprite",
+            "file": "sprites/does_not_exist.png",
+            "width": 120,
+            "height": 120,
+        }
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(manifest_data, f)
+        temp_path = f.name
+    try:
+        with pytest.raises(AssetLoadError) as excinfo:
+            AssetManager(temp_path)
+        assert "missing_sprite" in str(excinfo.value)
+    finally:
+        Path(temp_path).unlink(missing_ok=True)
+
+
+def test_asset_manager_raises_on_path_traversal() -> None:
+    """AssetManager with '..' in file path raises AssetLoadError."""
+    manifest_data = {
+        "traversal_try": {
+            "key": "traversal_try",
+            "file": "sprites/../../etc/passwd",
+            "width": 120,
+            "height": 120,
+        }
+    }
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
+        json.dump(manifest_data, f)
+        temp_path = f.name
+    try:
+        with pytest.raises(AssetLoadError):
+            AssetManager(temp_path)
+    finally:
+        Path(temp_path).unlink(missing_ok=True)
+
+
+def test_asset_manager_loads_all_23_keys() -> None:
+    """AssetManager loads all 23 manifest keys without exception."""
+    manager = AssetManager("assets/manifest.json")
+    for key in ALL_MANIFEST_KEYS:
+        surface = manager.get_sprite(key)
+        assert surface is not None
+        assert surface.get_width() > 0
+        assert surface.get_height() > 0
