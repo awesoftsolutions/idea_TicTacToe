@@ -14,8 +14,9 @@ Architecture §12 dependency injection wiring:
     ├─ AssetManager(manifest_path)          → shared across scenes
     ├─ Board()                               → owned by GameScene
     ├─ TeamSelectScene(assets, event_to_reaction)
-    ├─ GameScene(assets, board, event_to_reaction)
-    └─ CelebrationScene(assets, board, event_to_reaction, result)
+#     ├── GameScene(assets, board, event_to_reaction, particle_system)
+#     └── CelebrationScene(assets, board, event_to_reaction, result,
+#                           particle_system, winning_cells=None)
 """
 
 from __future__ import annotations
@@ -29,6 +30,7 @@ import pygame
 
 from src.assets import AssetLoadError, AssetManager, ManifestMissingError
 from src.coach import event_to_reaction
+from src.effects import ParticleSystem
 from src.game import Board
 from src.scenes import CelebrationScene, GameScene, TeamSelectScene
 
@@ -97,16 +99,19 @@ def main() -> None:
 
     clock = pygame.time.Clock()
 
-    # ── 3.3.2 Asset Loading (fail-loudly) ────────────────────────────────
+    # -- 3.3.2 Asset Loading (fail-loudly) --
     assets = AssetManager(ASSET_MANIFEST_PATH)
 
-    # ── 3.3.3 Board and Coach ────────────────────────────────────────────
+    # -- 3.3.2b ParticleSystem (shared across scenes) --
+    particle_system = ParticleSystem(assets)
+
+    # -- 3.3.3 Board and Coach --
     board = Board()
 
-    # ── 3.3.4 Scene Construction with Dependency Injection ──────────────────
+    # -- 3.3.4 Scene Construction with Dependency Injection --
     team_select = TeamSelectScene(assets, event_to_reaction)
-    game = GameScene(assets, board, event_to_reaction)
-    # CelebrationScene is NOT constructed here — it is constructed on-demand
+    game = GameScene(assets, board, event_to_reaction, particle_system)
+    # CelebrationScene is NOT constructed here -- it is constructed on-demand
     # during the game->celebration transition (lines 149-157 below).
 
     # ── 3.3.5 Scene Manager ───────────────────────────────────────────────
@@ -153,19 +158,23 @@ def main() -> None:
                     board,
                     event_to_reaction,
                     winner_result or "draw",
+                    particle_system,
+                    board.winning_cells(),
                 )
                 scenes["celebration"] = celebration
                 current_scene = "celebration"
 
             elif next_scene == "team_select":
                 board.reset()
+                particle_system = ParticleSystem(assets)
                 team_select = TeamSelectScene(assets, event_to_reaction)
                 scenes["team_select"] = team_select
                 current_scene = "team_select"
 
             elif next_scene == "game":
+                particle_system = ParticleSystem(assets)
                 new_board = Board()
-                game = GameScene(assets, new_board, event_to_reaction)
+                game = GameScene(assets, new_board, event_to_reaction, particle_system)
                 scenes["game"] = game
                 board = new_board
                 current_scene = "game"

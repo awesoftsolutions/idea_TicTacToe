@@ -114,6 +114,16 @@ def _make_mock_board() -> MagicMock:
     return board
 
 
+def _make_mock_particle_system() -> MagicMock:
+    """Create a mocked ParticleSystem for integration testing.
+
+    Returns:
+        A plain ``MagicMock`` that can be injected as the ``particle_system``
+        parameter to ``CelebrationScene`` and ``GameScene`` constructors.
+    """
+    return MagicMock()
+
+
 # ---------------------------------------------------------------------------
 # Test class
 # ---------------------------------------------------------------------------
@@ -132,6 +142,7 @@ class TestCelebrationScene(unittest.TestCase):
         self.asset_manager = _make_mock_asset_manager()
         self.board = _make_mock_board()
         self.get_coach_reaction = _make_mock_coach()
+        self.particle_system = _make_mock_particle_system()
 
     # ── 6 required tests ──────────────────────────────────────────────────
 
@@ -150,6 +161,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         # Coach reaction requested
@@ -184,6 +196,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "draw",
+            self.particle_system,
         )
 
         # Coach reaction requested for draw
@@ -220,6 +233,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "O",
+            self.particle_system,
         )
 
         # Coach reaction requested for win:O
@@ -259,6 +273,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         # Click at the button centre
@@ -292,6 +307,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         # Click far outside the button region: top-left corner (0, 0)
@@ -321,6 +337,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         event = pygame.event.Event(pygame.KEYDOWN, {"key": pygame.K_r})
@@ -344,6 +361,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         event = pygame.event.Event(
@@ -372,6 +390,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         event = pygame.event.Event(
@@ -399,6 +418,7 @@ class TestCelebrationScene(unittest.TestCase):
             self.board,
             self.get_coach_reaction,
             "X",
+            self.particle_system,
         )
 
         # ~60 FPS frame
@@ -407,6 +427,103 @@ class TestCelebrationScene(unittest.TestCase):
         self.assertIsNone(scene.update(100.0))
         # Zero dt
         self.assertIsNone(scene.update(0.0))
+
+    # ------------------------------------------------------------------
+    # Sprint 5, Task 2 — CelebrationScene Effect Integration Tests
+    # ------------------------------------------------------------------
+
+    def test_celebration_confetti_starts_on_win(self) -> None:
+        """CB-CONFETTI: Win result starts ConfettiRain and WinningTrail.
+
+        Verifies:
+        - ``confetti._started`` is ``True`` after construction with win result.
+        - ``trail._started`` is ``True`` for a win with winning cells.
+        - ``trail._cells`` matches the provided ``winning_cells``.
+        - ``trail._centers[0]`` matches the pixel centre of (0, 0).
+        """
+        from src.scenes import CelebrationScene  # type: ignore[import-untyped]
+
+        winning_cells = [(0, 0), (0, 1), (0, 2)]
+        scene = CelebrationScene(
+            self.asset_manager,
+            self.board,
+            self.get_coach_reaction,
+            "X",
+            self.particle_system,
+            winning_cells,
+        )
+
+        # Confetti started
+        self.assertTrue(scene.confetti._started)
+
+        # Trail started with correct cells
+        self.assertTrue(scene.trail._started)
+        self.assertEqual(scene.trail._cells, winning_cells)
+
+        # First centre = (240, 220)
+        expected_cx = (
+            180 + 0 * 120 + 60
+        )  # BOARD_ORIGIN_X + col * CELL_SIZE + CELL_SIZE // 2
+        expected_cy = (
+            160 + 0 * 120 + 60
+        )  # BOARD_ORIGIN_Y + row * CELL_SIZE + CELL_SIZE // 2
+        self.assertEqual(scene.trail._centers[0], (expected_cx, expected_cy))
+
+    def test_celebration_trail_drawn_on_win(self) -> None:
+        """CB-TRAIL: WinningTrail receives correct cell centres for diagonal win.
+
+        Verifies:
+        - ``trail._cells`` matches the diagonal winning_cells.
+        - ``trail._centers`` contains three pixel-centre tuples.
+        - Each centre matches
+          ``BOARD_ORIGIN_{X,Y} + {col,row} * CELL_SIZE + CELL_SIZE // 2``.
+        """
+        from src.scenes import CelebrationScene  # type: ignore[import-untyped]
+
+        winning_cells = [(0, 0), (1, 1), (2, 2)]
+        scene = CelebrationScene(
+            self.asset_manager,
+            self.board,
+            self.get_coach_reaction,
+            "X",
+            self.particle_system,
+            winning_cells,
+        )
+
+        self.assertEqual(scene.trail._cells, winning_cells)
+
+        for i, (row, col) in enumerate(winning_cells):
+            expected_cx = 180 + col * 120 + 60
+            expected_cy = 160 + row * 120 + 60
+            self.assertEqual(
+                scene.trail._centers[i],
+                (expected_cx, expected_cy),
+                (
+                    f"Centre {i} for cell ({row},{col}) "
+                    f"should be ({expected_cx}, {expected_cy}), "
+                    f"got {scene.trail._centers[i]}"
+                ),
+            )
+
+    def test_celebration_no_trail_on_draw(self) -> None:
+        """CB-NOTRAIL: Draw result does NOT start WinningTrail or ConfettiRain.
+
+        Verifies:
+        - ``trail._started`` is ``False``.
+        - ``confetti._started`` is ``False``.
+        """
+        from src.scenes import CelebrationScene  # type: ignore[import-untyped]
+
+        scene = CelebrationScene(
+            self.asset_manager,
+            self.board,
+            self.get_coach_reaction,
+            "draw",
+            self.particle_system,
+        )
+
+        self.assertFalse(scene.trail._started)
+        self.assertFalse(scene.confetti._started)
 
 
 if __name__ == "__main__":

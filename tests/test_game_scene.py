@@ -108,14 +108,22 @@ def draw_surface() -> pygame.Surface:
 
 
 @pytest.fixture
-def scene(mock_asset_manager, board, get_coach_reaction):
+def particle_system():
+    """Fixture returning a MagicMock ParticleSystem."""
+    from unittest.mock import MagicMock
+
+    return MagicMock()
+
+
+@pytest.fixture
+def scene(mock_asset_manager, board, get_coach_reaction, particle_system):
     """Fixture constructing a GameScene with injected dependencies.
 
     Note: Will raise ImportError until GameScene is implemented (red phase).
     """
     from src.scenes import GameScene
 
-    return GameScene(mock_asset_manager, board, get_coach_reaction)
+    return GameScene(mock_asset_manager, board, get_coach_reaction, particle_system)
 
 
 # ===================================================================
@@ -302,9 +310,9 @@ def test_game_scene_coach_update_on_placement(scene, board) -> None:
     scene.handle_event(event)
 
     expression, line = scene.coach_reaction
-    assert expression == "point", (
-        f"Expected 'point' (next turn call), got '{expression}'"
-    )
+    assert (
+        expression == "point"
+    ), f"Expected 'point' (next turn call), got '{expression}'"
     # After X places, it's O's turn → ("point", "Puppies' turn! You've got this!")
     assert "puppies" in line.lower() or "turn" in line.lower()
 
@@ -327,3 +335,106 @@ def test_game_scene_turn_indicator(scene, board, draw_surface) -> None:
 
     # draw() should render without error after the state change
     scene.draw(draw_surface)
+
+
+# ===================================================================
+# Sprint 5, Task 2 — GameScene Effect Integration Tests
+# ===================================================================
+
+
+def test_game_scene_pop_in_starts_on_placement(scene) -> None:
+    """GT-POPIN: Placing a mark starts PopInAnimation for that cell.
+
+    Verifies:
+    - ``pop_in._animations`` contains the placed cell after ``start()``.
+    - ``cell_center_x`` matches BOARD_ORIGIN_X + col * CELL_SIZE + CELL_SIZE // 2.
+    - ``cell_center_y`` matches BOARD_ORIGIN_Y + row * CELL_SIZE + CELL_SIZE // 2.
+    - ``team_key`` matches the current mark's team sprite key.
+    """
+    # Act: click on cell (0, 0)
+    pos = _cell_center(0, 0)
+    event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": pos, "button": 1})
+    scene.handle_event(event)
+
+    # Assert: pop-in animation was started for (0, 0)
+    assert (0, 0) in scene.pop_in._animations, "Expected pop-in animation for (0, 0)"
+    anim_data = scene.pop_in._animations[(0, 0)]
+    expected_cx = BOARD_ORIGIN_X + 0 * CELL_SIZE + CELL_SIZE // 2  # 240
+    expected_cy = BOARD_ORIGIN_Y + 0 * CELL_SIZE + CELL_SIZE // 2  # 220
+    assert (
+        anim_data["cell_center_x"] == expected_cx
+    ), f"Expected cx={expected_cx}, got {anim_data['cell_center_x']}"
+    assert (
+        anim_data["cell_center_y"] == expected_cy
+    ), f"Expected cy={expected_cy}, got {anim_data['cell_center_y']}"
+    assert (
+        anim_data["team_key"] == "team1_cell"
+    ), f"Expected 'team1_cell', got '{anim_data['team_key']}'"
+
+
+def test_game_scene_sparkle_emits_on_placement(scene) -> None:
+    """GT-SPARKLE: Placing a mark emits sparkle particles at the cell centre.
+
+    Verifies:
+    - ``particle_system.add_particle`` is called at least once.
+    - ``x`` matches the pixel centre of cell (1, 1).
+    - ``y`` matches the pixel centre of cell (1, 1).
+    """
+    # Act: click on cell (1, 1)
+    pos = _cell_center(1, 1)
+    event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": pos, "button": 1})
+    scene.handle_event(event)
+
+    # Assert: sparkle emitted particles via the shared particle_system
+    assert (
+        scene.particle_system.add_particle.call_count >= 1
+    ), "Expected sparkle to emit at least 1 particle"
+    # Verify the first call's position matches the cell centre
+    _, kwargs = scene.particle_system.add_particle.call_args
+    expected_cx = BOARD_ORIGIN_X + 1 * CELL_SIZE + CELL_SIZE // 2  # 360
+    expected_cy = BOARD_ORIGIN_Y + 1 * CELL_SIZE + CELL_SIZE // 2  # 340
+    assert kwargs["x"] == expected_cx, f"Expected x={expected_cx}, got {kwargs['x']}"
+    assert kwargs["y"] == expected_cy, f"Expected y={expected_cy}, got {kwargs['y']}"
+
+
+def test_game_scene_wobble_triggers_on_occupied(scene, board) -> None:
+    """GT-WOBBLE: Clicking an occupied cell triggers OccupiedCellWobble.
+
+    Verifies:
+    - ``wobble._wobbles`` contains the occupied cell after ``trigger()``.
+    - Board state remains unchanged.
+    - No scene transition occurs.
+    """
+    # Arrange: pre-place a mark at (0, 0)
+    board.place(0, 0, "X")
+
+    # Act: click on the same cell (now occupied)
+    pos = _cell_center(0, 0)
+    event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": pos, "button": 1})
+    result = scene.handle_event(event)
+
+    # Assert: wobble state exists for (0, 0)
+    assert (0, 0) in scene.wobble._wobbles, "Expected wobble to be triggered for (0, 0)"
+
+    # Board state unchanged
+    assert board.cells[0][0] == "X"
+    # No scene transition
+    assert result is None
+
+
+def test_game_scene_last_move_updates(scene, board) -> None:
+    """GT-LASTMOVE: After placement, last_move highlights the cell.
+
+    Verifies:
+    - ``last_move.get_cell()`` returns the placed cell (2, 2).
+    """
+    # Act: click on cell (2, 2) — first placement
+    pos = _cell_center(2, 2)
+    event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, {"pos": pos, "button": 1})
+    scene.handle_event(event)
+
+    # Assert: last_move records the cell
+    assert scene.last_move.get_cell() == (
+        2,
+        2,
+    ), f"Expected last_move to return (2, 2), got {scene.last_move.get_cell()}"

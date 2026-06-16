@@ -21,9 +21,18 @@ import pygame.color  # noqa: F401 — force pygame.color submodule into the
 # pygame namespace so that pygame.font.Font (and other C extensions that
 # reference pygame.color.Color internally) do not trigger a lazy-load
 # circular import during test execution.
-import pygame.font  # noqa: F401 — same reason: ensure font submodule is
+import pygame.font  # noqa: F401 — ensure font submodule is available before
 
-# available before any scene constructor tries to use SysFont.
+# any scene constructor tries to use SysFont.
+from src.effects import (
+    ConfettiRain,
+    LastMoveHighlight,
+    OccupiedCellWobble,
+    PopInAnimation,
+    SparkleBurst,
+    WiggleAnimation,
+    WinningTrail,
+)
 from src.game import Board, BoardResult
 from src.sprite_config import OUTLINE_COLOR, OUTLINE_WIDTH, PALETTE
 
@@ -342,6 +351,8 @@ class CelebrationScene:
         board: object,
         get_coach_reaction: callable,
         result: str,
+        particle_system: object,
+        winning_cells: list[tuple[int, int]] | None = None,
     ) -> None:
         """Initialise the CelebrationScene with injected dependencies.
 
@@ -351,12 +362,16 @@ class CelebrationScene:
             get_coach_reaction: Callable accepting event string, returning
                 (expression_key, line_text).
             result: "X", "O", or "draw" from Board.winner().
+            particle_system: Shared ParticleSystem for confetti effects.
+            winning_cells: List of (row, col) winning cell coordinates from
+                Board.winning_cells().  Used to compute trail positions.
         """
         # Step 1: Store injected dependencies
         self._asset_manager = asset_manager
         self._board = board
         self._get_coach_reaction = get_coach_reaction
         self._result = result
+        self.particle_system = particle_system
 
         # Step 2: Compute celebration sprite key based on winner
         if result == "X":
@@ -414,6 +429,25 @@ class CelebrationScene:
             self._celebrate_x = (WINDOW_WIDTH // 2) - (cw // 2)
             self._celebrate_y = (WINDOW_HEIGHT // 2) - (ch // 2) - 60
 
+        # Step 11: Instantiate effect objects
+        self.confetti = ConfettiRain(particle_system, WINDOW_WIDTH, WINDOW_HEIGHT)
+        self.trail = WinningTrail()
+
+        # Step 12: Start effects based on result
+        if (
+            result in ("X", "O")
+            and winning_cells is not None
+            and len(winning_cells) > 0
+        ):
+            self.confetti.start()
+            centres: list[tuple[int, int]] = []
+            for win_row, win_col in winning_cells:
+                cx = BOARD_ORIGIN_X + win_col * CELL_SIZE + CELL_SIZE // 2
+                cy = BOARD_ORIGIN_Y + win_row * CELL_SIZE + CELL_SIZE // 2
+                centres.append((cx, cy))
+            self.trail.start(winning_cells, centres)
+        # Else (draw): no confetti, no trail — tie celebration only
+
     def handle_event(self, event: pygame.event.Event) -> str | None:
         """Process a pygame event for the celebration scene.
 
@@ -451,10 +485,9 @@ class CelebrationScene:
         return None
 
     def update(self, dt: float) -> str | None:
-        """Advance scene state by dt milliseconds.
+        """Advance scene state and effects by dt milliseconds.
 
-        CelebrationScene has no continuous animations this sprint
-        (deferred to Milestone 5). Always returns None.
+        Updates confetti rain particles and winning trail animation.
 
         Args:
             dt: Elapsed time since last frame in milliseconds.
@@ -462,6 +495,11 @@ class CelebrationScene:
         Returns:
             None — always. No scene transition from update().
         """
+        # Step 1: Update effects
+        self.confetti.update(dt)
+        self.trail.update(dt)
+
+        # Step 2: No scene transitions from update
         return None
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -469,12 +507,14 @@ class CelebrationScene:
 
         Rendering order (back to front):
             1. Background (bg_celebration)
-            2. Win: celebration sprite / Draw: "It's a tie!" text
-            3. Coach expression sprite
-            4. Speech bubble below Coach
-            5. Play Again button
-            6. "Press R or click Play Again to restart" instruction
-            7. Scene name overlay "Celebration"
+            2. Winning trail polyline (behind celebration sprite)
+            3. Win: celebration sprite / Draw: "It's a tie!" text
+            4. Coach expression sprite
+            5. Speech bubble below Coach
+            6. Play Again button
+            7. Confetti rain (on top of everything)
+            8. "Press R or click Play Again to restart" instruction
+            9. Scene name overlay "Celebration"
 
         Args:
             surface: The pygame display surface (960x720) to draw on.
@@ -482,7 +522,15 @@ class CelebrationScene:
         # Layer 1: Background
         surface.blit(self._bg_sprite, (0, 0))
 
-        # Layer 2: Win display or Draw message
+        # Layer 2: Winning trail (drawn behind celebration sprite)
+        self.trail.draw(
+            surface=surface,
+            grid_origin_x=BOARD_ORIGIN_X,
+            grid_origin_y=BOARD_ORIGIN_Y,
+            cell_size=CELL_SIZE,
+        )
+
+        # Layer 3: Win display or Draw message
         if self._celebrate_sprite_key is not None:
             # Win: blit winning team's celebration sprite
             surface.blit(
@@ -501,10 +549,10 @@ class CelebrationScene:
             text_y = (WINDOW_HEIGHT // 2) - (text_surface.get_height() // 2) - 60
             surface.blit(text_surface, (text_x, text_y))
 
-        # Layer 3: Coach character
+        # Layer 4: Coach character
         surface.blit(self._coach_sprite, (COACH_PANEL_X, COACH_PANEL_Y))
 
-        # Layer 4: Speech bubble below Coach sprite
+        # Layer 5: Speech bubble below Coach sprite
         render_speech_bubble(
             surface=surface,
             text=self._speech_line,
@@ -513,10 +561,13 @@ class CelebrationScene:
             font=self._font_bubble,
         )
 
-        # Layer 5: Play Again button
+        # Layer 6: Play Again button
         surface.blit(self._btn_sprite, (self._btn_x, self._btn_y))
 
-        # Layer 6: Instruction text below button
+        # Layer 7: Confetti rain (drawn on top of everything)
+        self.confetti.draw(surface)
+
+        # Layer 8: Instruction text below button
         instruction_text = "Press R or click Play Again to restart"
         instr_surface = self._font_small.render(
             instruction_text,
@@ -527,7 +578,7 @@ class CelebrationScene:
         instr_y = self._btn_y + self._btn_size[1] + 10
         surface.blit(instr_surface, (instr_x, instr_y))
 
-        # Layer 7: Scene name overlay (top-left corner)
+        # Layer 9: Scene name overlay (top-left corner)
         overlay_text = "Celebration"
         overlay_surface = self._font_small.render(
             overlay_text,
@@ -556,6 +607,7 @@ class GameScene:
         asset_manager: object,
         board: Board,
         get_coach_reaction: callable,
+        particle_system: object,
     ) -> None:
         """Initialise the GameScene with injected dependencies.
 
@@ -564,11 +616,13 @@ class GameScene:
             board: Board instance for game state management.
             get_coach_reaction: Callable accepting event string, returning
                 (expression_key, speech_line) tuple.
+            particle_system: Shared ParticleSystem instance for effect particles.
         """
         # Step 1: Store injected dependencies
         self.asset_manager = asset_manager
         self.board = board
         self.get_coach_reaction = get_coach_reaction
+        self.particle_system = particle_system
 
         # Step 2: Map board marks to team sprite key prefixes
         self.team_assignments: dict[str, str] = {
@@ -594,6 +648,16 @@ class GameScene:
         pygame.font.init()
         self.font = pygame.font.SysFont(None, 20)
 
+        # Step 6: Instantiate real effect objects
+        self.pop_in = PopInAnimation()
+        self.sparkle = SparkleBurst(particle_system)
+        self.wiggle = WiggleAnimation()
+        self.wobble = OccupiedCellWobble()
+        self.last_move = LastMoveHighlight()
+
+        # Step 7: Initialise elapsed time tracker (milliseconds)
+        self.elapsed_ms: float = 0.0
+
     def _try_place(self, row: int, col: int) -> str | None:
         """Attempt to place a mark at (row, col) with full Coach reaction chain.
 
@@ -611,6 +675,20 @@ class GameScene:
         result = self.board.place(row, col, current_mark)
 
         if result == BoardResult.OK:
+            # Step 2a: Compute cell pixel centre
+            cell_center_x = BOARD_ORIGIN_X + col * CELL_SIZE + CELL_SIZE // 2
+            cell_center_y = BOARD_ORIGIN_Y + row * CELL_SIZE + CELL_SIZE // 2
+
+            # Step 2b: Determine team sprite key for current mark
+            team_prefix = self.team_assignments[current_mark]
+            team_key = f"{team_prefix}_cell"
+
+            # Step 2c: Trigger placement effects
+            self.pop_in.start(row, col, cell_center_x, cell_center_y, team_key)
+            self.sparkle.emit(cell_center_x, cell_center_y)
+            self.wiggle.add_cell(row, col)
+            self.last_move.set_last(row, col)
+
             # Coach reaction for successful placement
             self.coach_reaction = self.get_coach_reaction("move_placed")
 
@@ -628,7 +706,11 @@ class GameScene:
             )
             return None
 
-        # OCCUPIED or INVALID — friendly no-op
+        # OCCUPIED — trigger wobble as friendly visual feedback
+        if result == BoardResult.OCCUPIED:
+            self.wobble.trigger(row, col)
+
+        # OCCUPIED or INVALID — no scene transition
         return None
 
     def handle_event(self, event: pygame.event.Event) -> str | None:
@@ -687,10 +769,10 @@ class GameScene:
         return None
 
     def update(self, dt: float) -> str | None:
-        """Advance scene state by dt milliseconds.
+        """Advance scene state and effects by dt milliseconds.
 
-        No continuous updates needed for GameScene in this sprint.
-        Animations deferred to Milestone 5.
+        Updates elapsed time tracker, pop-in animations, particles,
+        and wobble animations each frame.
 
         Args:
             dt: Elapsed time since last frame in milliseconds.
@@ -698,6 +780,15 @@ class GameScene:
         Returns:
             None always — no scene transition from update().
         """
+        # Step 1: Accumulate elapsed time
+        self.elapsed_ms += dt
+
+        # Step 2: Update effects
+        self.pop_in.update(dt)
+        self.particle_system.update(dt)
+        self.wobble.update(dt)
+
+        # Step 3: No scene transitions from update
         return None
 
     def draw(self, surface: pygame.Surface) -> None:
@@ -706,11 +797,13 @@ class GameScene:
         Rendering order (back to front):
             1. Background (bg_game)
             2. Board frame (board_frame)
-            3. Team sprites on occupied cells
+            3. Team sprites with wiggle y-offset, wobble x-offset, and pop-in scaling
             4. Keyboard selector highlight (periwinkle 3px border)
-            5. Coach expression sprite + speech bubble
-            6. Turn indicator text
-            7. Scene name overlay "Game"
+            5. Last-move highlight (subtle yellow border)
+            6. Coach expression sprite + speech bubble
+            7. Turn indicator text
+            8. Particle system draw (sparkle bursts, etc.)
+            9. Scene name overlay "Game"
 
         Args:
             surface: The pygame display surface (960x720) to draw on.
@@ -726,7 +819,8 @@ class GameScene:
             (BOARD_ORIGIN_X - 40, BOARD_ORIGIN_Y - 40),
         )
 
-        # Layer 3: Team sprites on occupied cells
+        # Layer 3: Team sprites with wiggle y-offset, wobble x-offset,
+        #           and pop-in scaling
         for row in range(3):
             for col in range(3):
                 cell_mark = self.board.cells[row][col]
@@ -734,9 +828,36 @@ class GameScene:
                     team_prefix = self.team_assignments[cell_mark]
                     sprite_key = f"{team_prefix}_cell"
                     sprite = self.asset_manager.get_sprite(sprite_key)
-                    cell_x = BOARD_ORIGIN_X + (col * CELL_SIZE)
-                    cell_y = BOARD_ORIGIN_Y + (row * CELL_SIZE)
-                    surface.blit(sprite, (cell_x, cell_y))
+
+                    cell_top_left_x = BOARD_ORIGIN_X + col * CELL_SIZE
+                    cell_top_left_y = BOARD_ORIGIN_Y + row * CELL_SIZE
+
+                    # Compute wiggle y-offset (sinusoidal idle oscillation)
+                    wy = self.wiggle.get_offset(row, col, self.elapsed_ms)
+
+                    # Compute wobble x-offset (decaying shake on occupied click)
+                    wx = self.wobble.get_offset(row, col)
+
+                    # Compute pop-in scale (1.0 if not animating)
+                    scale = self.pop_in.get_scale(row, col)
+
+                    if scale != 1.0:
+                        # Draw scaled sprite centred on cell
+                        scaled_w = int(sprite.get_width() * scale)
+                        scaled_h = int(sprite.get_height() * scale)
+                        scaled_sprite = pygame.transform.scale(
+                            sprite, (scaled_w, scaled_h)
+                        )
+                        centre_x = cell_top_left_x + CELL_SIZE // 2
+                        centre_y = cell_top_left_y + CELL_SIZE // 2
+                        blit_x = centre_x - scaled_w // 2 + int(wx)
+                        blit_y = centre_y - scaled_h // 2 + int(wy)
+                        surface.blit(scaled_sprite, (blit_x, blit_y))
+                    else:
+                        # Draw normal sprite at cell position with offsets
+                        blit_x = cell_top_left_x + int(wx)
+                        blit_y = cell_top_left_y + int(wy)
+                        surface.blit(sprite, (blit_x, blit_y))
 
         # Layer 4: Keyboard selector highlight
         sel_row, sel_col = self.keyboard_selector
@@ -750,7 +871,22 @@ class GameScene:
             width=3,
         )
 
-        # Layer 5: Coach expression sprite + speech bubble
+        # Layer 5: Last-move highlight (subtle yellow border)
+        last_cell = self.last_move.get_cell()
+        if last_cell is not None:
+            last_row, last_col = last_cell
+            last_cell_centre_x = BOARD_ORIGIN_X + last_col * CELL_SIZE + CELL_SIZE // 2
+            last_cell_centre_y = BOARD_ORIGIN_Y + last_row * CELL_SIZE + CELL_SIZE // 2
+            self.last_move.draw(
+                surface=surface,
+                grid_origin_x=BOARD_ORIGIN_X,
+                grid_origin_y=BOARD_ORIGIN_Y,
+                cell_size=CELL_SIZE,
+                cell_pixel_x=last_cell_centre_x,
+                cell_pixel_y=last_cell_centre_y,
+            )
+
+        # Layer 6: Coach expression sprite + speech bubble
         expression_key = self.coach_reaction[0]
         coach_sprite_key = f"coach_{expression_key}"
         coach_sprite = self.asset_manager.get_sprite(coach_sprite_key)
@@ -765,7 +901,7 @@ class GameScene:
             font=None,
         )
 
-        # Layer 6: Turn indicator (use team display names matching Coach voice)
+        # Layer 7: Turn indicator (use team display names matching Coach voice)
         team_name = self.team_display_names[self.board.current_player]
         turn_text = f"{team_name}' turn"
         text_surface = self.font.render(turn_text, True, OUTLINE_COLOR)
@@ -779,7 +915,10 @@ class GameScene:
         pygame.draw.rect(surface, (*PALETTE["butter"][:3], 180), bg_rect)
         surface.blit(text_surface, text_rect)
 
-        # Layer 7: Scene name overlay "Game" in top-left corner
+        # Layer 8: Particle system draw (sparkle bursts, etc.)
+        self.particle_system.draw(surface)
+
+        # Layer 9: Scene name overlay "Game" in top-left corner
         overlay_surface = self.font.render(
             "Game",
             True,

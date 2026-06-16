@@ -378,8 +378,10 @@ def test_turn_indicator_matches_coach_voice(
     mock_coach = MagicMock()
     mock_coach.side_effect = lambda event: ("point", "Your turn!")
 
+    particle_system_mock = MagicMock()
+
     # Act: construct GameScene (team_display_names field added in fix)
-    scene = GameScene(mock_asset_manager, mock_board, mock_coach)
+    scene = GameScene(mock_asset_manager, mock_board, mock_coach, particle_system_mock)
 
     # Assert: team_display_names exists and matches Coach voice
     assert hasattr(
