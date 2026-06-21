@@ -13,6 +13,9 @@ Two players each pick an animal team on the team select screen, then take turns 
 The entire visual identity follows the **Chunky Kawaii** art style, committed after evaluating five candidate styles in pre-implementation research (see [Rejected Alternatives](#rejected-alternatives)).
 
 
+# Favur Recording
+
+[![Watch the demo](https://img.youtube.com/vi/VG95LhqOg-o/maxresdefault.jpg)](https://www.youtube.com/watch?v=VG95LhqOg-o)
 
 ---
 
