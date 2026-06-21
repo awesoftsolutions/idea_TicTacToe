@@ -21,20 +21,19 @@ import pygame
 import pytest
 
 from src.effects import (
+    MAX_PARTICLES,
+    POPIN_DURATION_MS,
+    SPARKLE_DURATION_MS,
+    WOBBLE_DURATION_MS,
     ConfettiRain,
     LastMoveHighlight,
-    MAX_PARTICLES,
     OccupiedCellWobble,
     ParticleSystem,
     PopInAnimation,
-    POPIN_DURATION_MS,
-    SPARKLE_DURATION_MS,
     SparkleBurst,
     WiggleAnimation,
     WinningTrail,
-    WOBBLE_DURATION_MS,
 )
-
 
 # ---------------------------------------------------------------------------
 # StubAssetManager — minimal sprite provider for headless tests
@@ -138,6 +137,7 @@ def highlight() -> LastMoveHighlight:
 
 # --- ParticleSystem tests (1-3) ---
 
+
 def test_particle_lifetime_decreases(
     particle_system: ParticleSystem,
 ) -> None:
@@ -147,7 +147,12 @@ def test_particle_lifetime_decreases(
     the remaining lifetime ≈ 75 (AC-1, AC-2).
     """
     particle_system.add_particle(
-        x=0.0, y=0.0, vx=0.0, vy=0.0, lifetime=100.0, sprite_key="sparkle",
+        x=0.0,
+        y=0.0,
+        vx=0.0,
+        vy=0.0,
+        lifetime=100.0,
+        sprite_key="sparkle",
     )
     particle_system.update(25.0)
     remaining = particle_system.active_particles[0].lifetime
@@ -159,7 +164,12 @@ def test_particle_expired_removed(
 ) -> None:
     """Particle with lifetime <= 0 is removed from the active list (AC-2)."""
     particle_system.add_particle(
-        x=0.0, y=0.0, vx=0.0, vy=0.0, lifetime=50.0, sprite_key="sparkle",
+        x=0.0,
+        y=0.0,
+        vx=0.0,
+        vy=0.0,
+        lifetime=50.0,
+        sprite_key="sparkle",
     )
     particle_system.update(100.0)
     assert len(particle_system.active_particles) == 0
@@ -172,12 +182,18 @@ def test_particle_system_capacity(
     excess = MAX_PARTICLES + 5
     for _ in range(excess):
         particle_system.add_particle(
-            x=0.0, y=0.0, vx=0.0, vy=0.0, lifetime=1000.0, sprite_key="sparkle",
+            x=0.0,
+            y=0.0,
+            vx=0.0,
+            vy=0.0,
+            lifetime=1000.0,
+            sprite_key="sparkle",
         )
     assert len(particle_system.active_particles) <= MAX_PARTICLES
 
 
 # --- PopInAnimation tests (4-6) ---
+
 
 def test_pop_in_scale_0_at_start(pop_in: PopInAnimation) -> None:
     """Pop-in scale returns 0.0 before any update (AC-3)."""
@@ -209,6 +225,7 @@ def test_pop_in_completes_approximately_on_time(
 
 # --- SparkleBurst tests (7-8) ---
 
+
 def test_sparkle_burst_emits_particles(
     particle_system: ParticleSystem,
     sparkle: SparkleBurst,
@@ -239,6 +256,7 @@ def test_sparkle_particles_fade(
 
 # --- ConfettiRain test (9) ---
 
+
 def test_confetti_rain_particles_fall(
     particle_system: ParticleSystem,
     confetti: ConfettiRain,
@@ -248,24 +266,26 @@ def test_confetti_rain_particles_fall(
     initial_ys = [p.y for p in particle_system.active_particles]
     confetti.update(100.0)
     for i, p in enumerate(particle_system.active_particles):
-        assert p.y > initial_ys[i], (
-            f"Particle {i}: expected y > {initial_ys[i]}, got {p.y}"
-        )
+        assert (
+            p.y > initial_ys[i]
+        ), f"Particle {i}: expected y > {initial_ys[i]}, got {p.y}"
 
 
 # --- WiggleAnimation test (10) ---
+
 
 def test_wiggle_animation_oscillates(wiggle: WiggleAnimation) -> None:
     """Wiggle offsets at 1000 ms and 2000 ms have opposite signs (AC-6)."""
     wiggle.add_cell(0, 0)
     offset_1 = wiggle.get_offset(0, 0, elapsed_ms=1000.0)
     offset_2 = wiggle.get_offset(0, 0, elapsed_ms=2000.0)
-    assert offset_1 * offset_2 < 0, (
-        f"Expected opposite-sign offsets, got {offset_1} and {offset_2}"
-    )
+    assert (
+        offset_1 * offset_2 < 0
+    ), f"Expected opposite-sign offsets, got {offset_1} and {offset_2}"
 
 
 # --- OccupiedCellWobble test (11) ---
+
 
 def test_wobble_decays_to_zero(wobble: OccupiedCellWobble) -> None:
     """Wobble offset is non-zero after trigger and trends to ~0 (AC-7)."""
@@ -273,9 +293,9 @@ def test_wobble_decays_to_zero(wobble: OccupiedCellWobble) -> None:
     # After a small time step the decaying oscillation should be non-zero.
     wobble.update(1.0)
     offset_mid = wobble.get_offset(0, 0)
-    assert offset_mid != pytest.approx(0.0, abs=0.01), (
-        f"Expected non-zero offset after trigger + 1ms, got {offset_mid}"
-    )
+    assert offset_mid != pytest.approx(
+        0.0, abs=0.01
+    ), f"Expected non-zero offset after trigger + 1ms, got {offset_mid}"
     # After the full wobble duration the offset should be ~0.
     wobble.update(WOBBLE_DURATION_MS)
     offset_end = wobble.get_offset(0, 0)
@@ -283,6 +303,7 @@ def test_wobble_decays_to_zero(wobble: OccupiedCellWobble) -> None:
 
 
 # --- LastMoveHighlight test (12) ---
+
 
 def test_last_move_highlight_tracks(highlight: LastMoveHighlight) -> None:
     """set_last records cell, get_cell returns it; clear() removes it (AC-1)."""
@@ -293,6 +314,7 @@ def test_last_move_highlight_tracks(highlight: LastMoveHighlight) -> None:
 
 
 # --- WinningTrail test (13) ---
+
 
 def test_winning_trail_start_initializes(trail: WinningTrail) -> None:
     """WinningTrail.start stores cells; is_active() returns True (AC-9)."""

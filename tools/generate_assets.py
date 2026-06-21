@@ -29,10 +29,10 @@ from src.sprite_config import (
     OUTLINE_COLOR,
     OUTLINE_WIDTH,
     PALETTE,
+    SCENE_COLORS,
     SPRITE_SPECS,
     TEAM_KEYS,
     UI_KEYS,
-    SCENE_COLORS,
 )
 
 # ── Paths ───────────────────────────────────────────────────────────────────
@@ -128,13 +128,21 @@ def draw_oval_eyes(
     )
     pupil_r = max(eye_w // 4, 2)
     draw.ellipse(
-        [cx - spacing - eye_w // 2 - pupil_r, cy - pupil_r,
-         cx - spacing - eye_w // 2 + pupil_r, cy + pupil_r],
+        [
+            cx - spacing - eye_w // 2 - pupil_r,
+            cy - pupil_r,
+            cx - spacing - eye_w // 2 + pupil_r,
+            cy + pupil_r,
+        ],
         fill=pupil_color,
     )
     draw.ellipse(
-        [cx + spacing + eye_w // 2 - pupil_r, cy - pupil_r,
-         cx + spacing + eye_w // 2 + pupil_r, cy + pupil_r],
+        [
+            cx + spacing + eye_w // 2 - pupil_r,
+            cy - pupil_r,
+            cx + spacing + eye_w // 2 + pupil_r,
+            cy + pupil_r,
+        ],
         fill=pupil_color,
     )
 
@@ -151,14 +159,16 @@ def draw_crescent_mouth(
     if happy:
         draw.arc(
             [cx - half, cy - half, cx + half, cy + half],
-            start=0, end=180,
+            start=0,
+            end=180,
             fill=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
     else:
         draw.arc(
             [cx - half // 2, cy - half // 2, cx + half // 2, cy + half // 2],
-            start=180, end=360,
+            start=180,
+            end=360,
             fill=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
@@ -176,7 +186,8 @@ def draw_dot_nose(
         color = (60, 50, 64, 255)
     draw.ellipse(
         [cx - r, cy - r, cx + r, cy + r],
-        fill=color, outline=None,
+        fill=color,
+        outline=None,
     )
 
 
@@ -192,11 +203,13 @@ def draw_blush(
         color = _rgba("primary_pink", 160)
     draw.ellipse(
         [cx - 16 - r, cy + 2, cx - 16 + r, cy + 2 + r * 2],
-        fill=color, outline=None,
+        fill=color,
+        outline=None,
     )
     draw.ellipse(
         [cx + 16 - r, cy + 2, cx + 16 + r, cy + 2 + r * 2],
-        fill=color, outline=None,
+        fill=color,
+        outline=None,
     )
 
 
@@ -236,7 +249,9 @@ def draw_character_base(
                 (cx - head_r - 6 + ear_offset, ear_top_y - 4),
                 (cx - head_r + 4 + ear_offset, ear_base_y),
             ],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         # Inner ear pink
         draw.polygon(
@@ -254,7 +269,9 @@ def draw_character_base(
                 (cx + head_r + 6 - ear_offset, ear_top_y - 4),
                 (cx + head_r - 4, ear_base_y),
             ],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.polygon(
             [
@@ -267,35 +284,67 @@ def draw_character_base(
     elif ear_type == "puppy":
         ear_extra_y = ear_offset * 2
         draw.ellipse(
-            [cx - head_r - 14, cy - head_r + 4 + ear_extra_y,
-             cx - head_r - 2, cy - head_r + 22 + ear_extra_y],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            [
+                cx - head_r - 14,
+                cy - head_r + 4 + ear_extra_y,
+                cx - head_r - 2,
+                cy - head_r + 22 + ear_extra_y,
+            ],
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.ellipse(
-            [cx + head_r + 2, cy - head_r + 4 + ear_extra_y,
-             cx + head_r + 14, cy - head_r + 22 + ear_extra_y],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            [
+                cx + head_r + 2,
+                cy - head_r + 4 + ear_extra_y,
+                cx + head_r + 14,
+                cy - head_r + 22 + ear_extra_y,
+            ],
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
     elif ear_type == "coach":
         ear_r = head_r // 3
         draw.ellipse(
-            [cx - head_r + 2, cy - head_r - ear_r - 2 + ear_offset,
-             cx - head_r + 2 + ear_r * 2, cy - head_r + ear_r - 2 + ear_offset],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            [
+                cx - head_r + 2,
+                cy - head_r - ear_r - 2 + ear_offset,
+                cx - head_r + 2 + ear_r * 2,
+                cy - head_r + ear_r - 2 + ear_offset,
+            ],
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.ellipse(
-            [cx - head_r + 5, cy - head_r - ear_r + 2 + ear_offset,
-             cx - head_r + 5 + ear_r, cy - head_r + 2 + ear_offset],
+            [
+                cx - head_r + 5,
+                cy - head_r - ear_r + 2 + ear_offset,
+                cx - head_r + 5 + ear_r,
+                cy - head_r + 2 + ear_offset,
+            ],
             fill=_rgba("peach", 180),
         )
         draw.ellipse(
-            [cx + head_r - 2 - ear_r * 2, cy - head_r - ear_r - 2 + ear_offset,
-             cx + head_r - 2, cy - head_r + ear_r - 2 + ear_offset],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            [
+                cx + head_r - 2 - ear_r * 2,
+                cy - head_r - ear_r - 2 + ear_offset,
+                cx + head_r - 2,
+                cy - head_r + ear_r - 2 + ear_offset,
+            ],
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.ellipse(
-            [cx + head_r - 5 - ear_r, cy - head_r - ear_r + 2 + ear_offset,
-             cx + head_r - 5, cy - head_r + 2 + ear_offset],
+            [
+                cx + head_r - 5 - ear_r,
+                cy - head_r - ear_r + 2 + ear_offset,
+                cx + head_r - 5,
+                cy - head_r + 2 + ear_offset,
+            ],
             fill=_rgba("peach", 180),
         )
 
@@ -320,14 +369,26 @@ def draw_paws_up(
     paw_r = max(head_r // 4, 6)
     offset_y = -head_r - 8 + paws_extra
     draw.ellipse(
-        [cx - head_r // 2 - paw_r, cy + offset_y - paw_r,
-         cx - head_r // 2 + paw_r, cy + offset_y + paw_r],
-        fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+        [
+            cx - head_r // 2 - paw_r,
+            cy + offset_y - paw_r,
+            cx - head_r // 2 + paw_r,
+            cy + offset_y + paw_r,
+        ],
+        fill=fill,
+        outline=OUTLINE_COLOR,
+        width=OUTLINE_WIDTH,
     )
     draw.ellipse(
-        [cx + head_r // 2 - paw_r, cy + offset_y - paw_r,
-         cx + head_r // 2 + paw_r, cy + offset_y + paw_r],
-        fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+        [
+            cx + head_r // 2 - paw_r,
+            cy + offset_y - paw_r,
+            cx + head_r // 2 + paw_r,
+            cy + offset_y + paw_r,
+        ],
+        fill=fill,
+        outline=OUTLINE_COLOR,
+        width=OUTLINE_WIDTH,
     )
 
 
@@ -350,7 +411,9 @@ def draw_paw_side(
         py = cy + 6 - abs(wave_offset)
     draw.ellipse(
         [px - paw_r, py - paw_r, px + paw_r, py + paw_r],
-        fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+        fill=fill,
+        outline=OUTLINE_COLOR,
+        width=OUTLINE_WIDTH,
     )
 
 
@@ -368,16 +431,27 @@ def draw_tail(
     tail_base_y = body_cy + body_ry
     if tail_type == "kitten":
         draw.arc(
-            [cx + 6 + wag_offset, tail_base_y - 4,
-             cx + 18 + wag_offset, tail_base_y + 12],
-            start=0, end=120,
+            [
+                cx + 6 + wag_offset,
+                tail_base_y - 4,
+                cx + 18 + wag_offset,
+                tail_base_y + 12,
+            ],
+            start=0,
+            end=120,
             fill=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
         draw.ellipse(
-            [cx + 14 + wag_offset, tail_base_y + 4,
-             cx + 22 + wag_offset, tail_base_y + 12],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            [
+                cx + 14 + wag_offset,
+                tail_base_y + 4,
+                cx + 22 + wag_offset,
+                tail_base_y + 12,
+            ],
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
     elif tail_type == "puppy":
         tx = cx - 14 + wag_offset
@@ -387,7 +461,9 @@ def draw_tail(
                 (tx - 8, tail_base_y - 10),
                 (tx + 4, tail_base_y - 2),
             ],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
 
 
@@ -457,19 +533,24 @@ def generate_team_sprite(
         big_mouth = True
 
     draw_character_base(
-        draw, cx, cy, head_r,
-        body_rx=22, body_ry=26, body_cy_offset=38,
-        fill=fill, ear_type=ear_type, ear_offset=ear_offset,
+        draw,
+        cx,
+        cy,
+        head_r,
+        body_rx=22,
+        body_ry=26,
+        body_cy_offset=38,
+        fill=fill,
+        ear_type=ear_type,
+        ear_offset=ear_offset,
     )
 
-    draw_tail(draw, cx, cy, cy + 38, 26, fill,
-              tail_type=tail_type, wag_offset=tail_wag)
+    draw_tail(draw, cx, cy, cy + 38, 26, fill, tail_type=tail_type, wag_offset=tail_wag)
 
     if paws_up:
         draw_paws_up(draw, cx, cy, head_r, fill, paws_extra=4)
 
-    _draw_team_face(draw, cx, cy, head_r,
-                    wide_eyes=wide_eyes, big_mouth=big_mouth)
+    _draw_team_face(draw, cx, cy, head_r, wide_eyes=wide_eyes, big_mouth=big_mouth)
 
     _save_sprite(img, key)
 
@@ -497,15 +578,15 @@ def _draw_coach_face(
         draw_blush(draw, cx, cy + 8, r=7)
     elif expression == "point":
         draw.ellipse(
-            [cx - spacing - eye_w, eye_cy - eye_h,
-             cx - spacing, eye_cy + eye_h],
+            [cx - spacing - eye_w, eye_cy - eye_h, cx - spacing, eye_cy + eye_h],
             fill=(255, 255, 255, 255),
             outline=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
         draw.arc(
             [cx + spacing, eye_cy - eye_h, cx + spacing + eye_w, eye_cy + eye_h],
-            start=0, end=180,
+            start=0,
+            end=180,
             fill=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
@@ -531,7 +612,8 @@ def _draw_coach_face(
         draw_dot_nose(draw, cx, cy + 12, r=3)
         draw.arc(
             [cx - 6, cy + 16, cx + 6, cy + 22],
-            start=180, end=360,
+            start=180,
+            end=360,
             fill=OUTLINE_COLOR,
             width=OUTLINE_WIDTH,
         )
@@ -575,19 +657,24 @@ def generate_coach_sprite(key: str, expression: str) -> None:
         ear_offset = 2
 
     draw_character_base(
-        draw, cx, cy, head_r,
-        body_rx=35, body_ry=40, body_cy_offset=58,
-        fill=fill, ear_type="coach", ear_offset=ear_offset,
+        draw,
+        cx,
+        cy,
+        head_r,
+        body_rx=35,
+        body_ry=40,
+        body_cy_offset=58,
+        fill=fill,
+        ear_type="coach",
+        ear_offset=ear_offset,
     )
 
     if paw_raise == "both":
         draw_paws_up(draw, cx, cy, head_r, fill, paws_extra=8)
     elif paw_raise == "left":
-        draw_paw_side(draw, cx, cy, head_r, fill,
-                      side="left", wave_offset=paw_offset)
+        draw_paw_side(draw, cx, cy, head_r, fill, side="left", wave_offset=paw_offset)
     elif paw_raise == "right":
-        draw_paw_side(draw, cx, cy, head_r, fill,
-                      side="right", wave_offset=paw_offset)
+        draw_paw_side(draw, cx, cy, head_r, fill, side="right", wave_offset=paw_offset)
 
     _draw_coach_face(draw, cx, cy, head_r, expression)
 
@@ -623,7 +710,9 @@ def generate_background_sprite(key: str, scene: str) -> None:
         c = _lerp_color(mid_color, bot_color, t)
         draw.line([(0, i), (w, i)], fill=c, width=1)
 
-    rng = random.Random(SEED + (1 if scene == "team_select" else 2 if scene == "game" else 3))
+    rng = random.Random(
+        SEED + (1 if scene == "team_select" else 2 if scene == "game" else 3)
+    )
 
     if scene == "team_select":
         for _ in range(8):
@@ -631,26 +720,28 @@ def generate_background_sprite(key: str, scene: str) -> None:
             sy = rng.randint(40, h - 40)
             sr = rng.randint(10, 25)
             sc = _rgba(rng.choice(scene_colors), 100)
-            draw.ellipse([sx - sr, sy - sr, sx + sr, sy + sr],
-                         fill=sc, outline=None)
+            draw.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=sc, outline=None)
         draw.rounded_rectangle(
             [0, h - 80, w, h],
-            radius=20, fill=top_color,
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            radius=20,
+            fill=top_color,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
     elif scene == "game":
         draw.rounded_rectangle(
             [0, h - 100, w, h],
-            radius=30, fill=_rgba("mint_accent", 200),
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            radius=30,
+            fill=_rgba("mint_accent", 200),
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         for _ in range(6):
             sx = rng.randint(50, w - 50)
             sy = rng.randint(30, h - 200)
             sr = rng.randint(15, 30)
             sc = _rgba("peach", 80)
-            draw.ellipse([sx - sr, sy - sr, sx + sr, sy + sr],
-                         fill=sc, outline=None)
+            draw.ellipse([sx - sr, sy - sr, sx + sr, sy + sr], fill=sc, outline=None)
     elif scene == "celebration":
         for _ in range(12):
             sx = rng.randint(30, w - 30)
@@ -660,8 +751,10 @@ def generate_background_sprite(key: str, scene: str) -> None:
             draw.polygon(pts, fill=sc, outline=OUTLINE_COLOR, width=2)
         draw.rounded_rectangle(
             [0, h - 60, w, h],
-            radius=15, fill=_rgba("lavender", 150),
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            radius=15,
+            fill=_rgba("lavender", 150),
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
 
     _save_sprite(img, key)
@@ -693,18 +786,26 @@ def generate_effect_sprite(key: str, effect_type: str) -> None:
         )
     elif effect_type == "confetti":
         draw_rounded_rect(
-            draw, (2, 2, w - 2, h - 2),
-            radius=4, fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            draw,
+            (2, 2, w - 2, h - 2),
+            radius=4,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
     elif effect_type == "heart":
         cr = w // 5
         draw.ellipse(
             [cx - cr * 2, cy - cr, cx, cy + cr],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.ellipse(
             [cx, cy - cr, cx + cr * 2, cy + cr],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw.polygon(
             [
@@ -712,7 +813,9 @@ def generate_effect_sprite(key: str, effect_type: str) -> None:
                 (cx, cy + cr * 3),
                 (cx + cr * 2, cy + cr // 2),
             ],
-            fill=fill, outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
     elif effect_type == "star":
         pts = star_points(cx, cy, w * 0.4, w * 0.16, 5)
@@ -740,19 +843,24 @@ def generate_ui_sprite(key: str, ui_type: str) -> None:
     if ui_type in ("btn_start", "btn_play_again"):
         radius = h // 2
         draw_rounded_rect(
-            draw, (0, 0, w, h),
-            radius=radius, fill=fill,
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            draw,
+            (0, 0, w, h),
+            radius=radius,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         inner_margin = 8
         draw_rounded_rect(
-            draw, (inner_margin, inner_margin, w - inner_margin, h - inner_margin),
+            draw,
+            (inner_margin, inner_margin, w - inner_margin, h - inner_margin),
             radius=radius - 4,
             fill=_rgba(base_color_name, 200),
         )
         highlight = _rgba("butter", 40)
         draw_rounded_rect(
-            draw, (inner_margin, inner_margin, w - inner_margin, h // 2),
+            draw,
+            (inner_margin, inner_margin, w - inner_margin, h // 2),
             radius=radius - 4,
             fill=highlight,
         )
@@ -764,28 +872,39 @@ def generate_ui_sprite(key: str, ui_type: str) -> None:
         rail_y = h // 2 - rail_h
 
         draw_rounded_rect(
-            draw, (0, rail_y, w, rail_y + rail_h),
-            radius=6, fill=fill,
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            draw,
+            (0, rail_y, w, rail_y + rail_h),
+            radius=6,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         draw_rounded_rect(
-            draw, (0, rail_y + rail_h + 6, w, rail_y + rail_h * 2 + 6),
-            radius=6, fill=fill,
-            outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+            draw,
+            (0, rail_y + rail_h + 6, w, rail_y + rail_h * 2 + 6),
+            radius=6,
+            fill=fill,
+            outline=OUTLINE_COLOR,
+            width=OUTLINE_WIDTH,
         )
         picket_top = 4
         picket_bot = h - 4
         for i in range(picket_count):
             px = gap + i * (picket_w + gap * 2)
             draw_rounded_rect(
-                draw, (px, picket_top, px + picket_w, picket_bot),
-                radius=8, fill=fill,
-                outline=OUTLINE_COLOR, width=OUTLINE_WIDTH,
+                draw,
+                (px, picket_top, px + picket_w, picket_bot),
+                radius=8,
+                fill=fill,
+                outline=OUTLINE_COLOR,
+                width=OUTLINE_WIDTH,
             )
             tip_h = 12
             draw_rounded_rect(
-                draw, (px + 2, picket_top, px + picket_w - 2, picket_top + tip_h),
-                radius=6, fill=_rgba("butter", 100),
+                draw,
+                (px + 2, picket_top, px + picket_w - 2, picket_top + tip_h),
+                radius=6,
+                fill=_rgba("butter", 100),
             )
 
     _save_sprite(img, key)
@@ -933,16 +1052,13 @@ def write_manifest() -> None:
             "tips, periwinkle base, 32x32"
         ),
         "confetti": (
-            "Chunky Kawaii confetti particle, rounded rectangle, "
-            "butter base, 16x16"
+            "Chunky Kawaii confetti particle, rounded rectangle, " "butter base, 16x16"
         ),
         "heart": (
             "Chunky Kawaii heart shape, primary pink, two circles "
             "with triangle point, 24x24"
         ),
-        "star": (
-            "Chunky Kawaii star shape, 5-point star, butter base, 24x24"
-        ),
+        "star": ("Chunky Kawaii star shape, 5-point star, butter base, 24x24"),
         "btn_start": (
             "Chunky Kawaii pill-shaped start button, periwinkle base, "
             "lighter inner area for text, 200x60"

@@ -155,12 +155,12 @@ def test_winner_column_middle() -> None:
 def test_winner_column_right() -> None:
     """O in right column -> winner is 'O'."""
     board = Board()
-    board.place(0, 1, "X")   # X at (0,1)
-    board.place(0, 2, "O")   # O at (0,2)
-    board.place(1, 1, "X")   # X at (1,1)
-    board.place(1, 2, "O")   # O at (1,2)
-    board.place(2, 0, "X")   # X at (2,0) — no line formed
-    board.place(2, 2, "O")   # O at (2,2) — completes right column
+    board.place(0, 1, "X")  # X at (0,1)
+    board.place(0, 2, "O")  # O at (0,2)
+    board.place(1, 1, "X")  # X at (1,1)
+    board.place(1, 2, "O")  # O at (1,2)
+    board.place(2, 0, "X")  # X at (2,0) — no line formed
+    board.place(2, 2, "O")  # O at (2,2) — completes right column
     assert board.winner() == "O"
 
 
@@ -178,12 +178,12 @@ def test_winner_diagonal_main() -> None:
 def test_winner_diagonal_anti() -> None:
     """O in anti-diagonal -> winner is 'O'."""
     board = Board()
-    board.place(1, 0, "X")    # X
-    board.place(0, 2, "O")    # O
-    board.place(0, 0, "X")    # X
-    board.place(1, 1, "O")    # O
-    board.place(2, 1, "X")    # X
-    board.place(2, 0, "O")    # O completes anti-diagonal
+    board.place(1, 0, "X")  # X
+    board.place(0, 2, "O")  # O
+    board.place(0, 0, "X")  # X
+    board.place(1, 1, "O")  # O
+    board.place(2, 1, "X")  # X
+    board.place(2, 0, "O")  # O completes anti-diagonal
     assert board.winner() == "O"
 
 

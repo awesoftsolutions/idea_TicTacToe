@@ -17,6 +17,11 @@ ensuring consistent animation speed across any frame rate.
 Particle count is capped at 200 concurrent particles (architecture §14).
 """
 
+# CHANGELOG:
+# - Sprint 5 — New file: 8 animation/particle classes — ParticleSystem,
+#   PopInAnimation, SparkleBurst, WiggleAnimation, OccupiedCellWobble,
+#   ConfettiRain, WinningTrail, LastMoveHighlight
+
 from __future__ import annotations
 
 import math
@@ -161,9 +166,7 @@ class ParticleSystem:
             particle.y += particle.vy * dt / 1000.0
             particle.lifetime -= dt
 
-        self.active_particles = [
-            p for p in self.active_particles if p.lifetime > 0
-        ]
+        self.active_particles = [p for p in self.active_particles if p.lifetime > 0]
 
     def draw(self, surface: pygame.Surface) -> None:
         """Render all active particles onto *surface*.
@@ -187,9 +190,7 @@ class ParticleSystem:
             if particle.scale != 1.0:
                 scaled_w = int(sprite.get_width() * particle.scale)
                 scaled_h = int(sprite.get_height() * particle.scale)
-                sprite_copy = pygame.transform.scale(
-                    sprite_copy, (scaled_w, scaled_h)
-                )
+                sprite_copy = pygame.transform.scale(sprite_copy, (scaled_w, scaled_h))
                 blit_x = int(particle.x) - scaled_w // 2
                 blit_y = int(particle.y) - scaled_h // 2
             else:
@@ -406,10 +407,7 @@ class WiggleAnimation:
         if time_offset is None:
             return 0.0
 
-        return (
-            math.sin(elapsed_ms * WIGGLE_SPEED + time_offset)
-            * WIGGLE_AMPLITUDE
-        )
+        return math.sin(elapsed_ms * WIGGLE_SPEED + time_offset) * WIGGLE_AMPLITUDE
 
 
 # ---------------------------------------------------------------------------
@@ -453,9 +451,7 @@ class OccupiedCellWobble:
             self._wobbles[key] += dt
 
         self._wobbles = {
-            k: v
-            for k, v in self._wobbles.items()
-            if v < WOBBLE_DURATION_MS
+            k: v for k, v in self._wobbles.items() if v < WOBBLE_DURATION_MS
         }
 
     def get_offset(self, row: int, col: int) -> float:
@@ -480,9 +476,7 @@ class OccupiedCellWobble:
 
         t = elapsed / WOBBLE_DURATION_MS
         # t is in [0, 1) while the wobble is active.
-        return (
-            math.sin(t * math.pi * 4.0) * WOBBLE_AMPLITUDE * (1.0 - t)
-        )
+        return math.sin(t * math.pi * 4.0) * WOBBLE_AMPLITUDE * (1.0 - t)
 
 
 # ---------------------------------------------------------------------------
@@ -660,8 +654,7 @@ class WinningTrail:
 
         for segment_index in range(draw_count - 1):
             segment_color = TRAIL_COLOR_CYCLE[
-                (self._color_index + segment_index)
-                % len(TRAIL_COLOR_CYCLE)
+                (self._color_index + segment_index) % len(TRAIL_COLOR_CYCLE)
             ]
             start_pt = self._centers[segment_index]
             end_pt = self._centers[segment_index + 1]

@@ -1,5 +1,7 @@
 # CHANGELOG:
 # - Sprint 4, Task 5 — Game entry point
+# - Sprint 5 — ParticleSystem dependency injection wiring for GameScene
+#   and CelebrationScene
 
 """Game entry point for Tic-Tac-Toe: Critter Clash.
 

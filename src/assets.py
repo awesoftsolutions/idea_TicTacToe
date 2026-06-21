@@ -61,9 +61,7 @@ class AssetManager:
         manifest_path_obj = Path(manifest_path)
 
         if not manifest_path_obj.exists():
-            raise ManifestMissingError(
-                f"Manifest file not found at {manifest_path}"
-            )
+            raise ManifestMissingError(f"Manifest file not found at {manifest_path}")
 
         with manifest_path_obj.open("r", encoding="utf-8") as f:
             manifest_data: dict = json.load(f)
@@ -93,8 +91,7 @@ class AssetManager:
 
             if not full_path.exists():
                 raise AssetLoadError(
-                    f"Failed to load asset '{key}': "
-                    f"file not found at {full_path}"
+                    f"Failed to load asset '{key}': " f"file not found at {full_path}"
                 )
 
             try:
@@ -128,13 +125,9 @@ class AssetManager:
             self._sprites[key] = surface
             loaded_count += 1
 
-            logger.debug(
-                "Loaded asset '%s' (%sx%s)", key, loaded_width, loaded_height
-            )
+            logger.debug("Loaded asset '%s' (%sx%s)", key, loaded_width, loaded_height)
 
-        logger.info(
-            "AssetManager: loaded %s/%s assets", loaded_count, total_count
-        )
+        logger.info("AssetManager: loaded %s/%s assets", loaded_count, total_count)
 
     def get_sprite(self, key: str) -> pygame.Surface:
         """Retrieve a loaded sprite by manifest key.

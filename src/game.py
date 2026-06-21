@@ -10,11 +10,24 @@ Typical usage:
     board.winner()           # -> "X" | "O" | "draw" | None
 """
 
+# CHANGELOG:
+# - Sprint 2: Added BoardResult enum (OK, OCCUPIED, INVALID).
+# - Sprint 2: Added WIN_LINES constant (8 win lines for 3x3 board).
+# - Sprint 2: Added Board class with __init__, cells, current_player, place,
+#   winner, is_full, winning_cells, and reset.
+
 from enum import Enum
 
 
 class BoardResult(Enum):
-    """Result of a board placement operation."""
+    """Result of a board placement operation.
+
+    Values:
+        OK: Mark was placed successfully and turn alternated.
+        OCCUPIED: The cell already contained a mark; no change made.
+        INVALID: Coordinates out of bounds, or mark did not match
+            the current player.
+    """
 
     OK = "ok"
     OCCUPIED = "occupied"

@@ -132,13 +132,9 @@ def main() -> None:
         if not check1_ok:
             detail_parts: list[str] = []
             if not pipeline_ok:
-                detail_parts.append(
-                    f"exit code {generation_result.returncode}"
-                )
+                detail_parts.append(f"exit code {generation_result.returncode}")
             if not file_count_ok:
-                detail_parts.append(
-                    f"only {len(png_files)} PNGs found (expected 23+)"
-                )
+                detail_parts.append(f"only {len(png_files)} PNGs found (expected 23+)")
             check1_detail = "; ".join(detail_parts)
         else:
             check1_detail = None
@@ -146,7 +142,12 @@ def main() -> None:
         check1_ok = False
         check1_detail = f"Command not found: {exc}"
 
-    print_result(1, check1_ok, "Generation pipeline exits 0 and produces 23+ PNG files", check1_detail)  # noqa: E501
+    print_result(
+        1,
+        check1_ok,
+        "Generation pipeline exits 0 and produces 23+ PNG files",
+        check1_detail,
+    )  # noqa: E501
     if check1_ok:
         passed_count += 1
 
@@ -169,7 +170,9 @@ def main() -> None:
         check2_ok = False
         check2_detail = f"Command not found: {exc}"
 
-    print_result(2, check2_ok, "Pytest test_assets.py exits 0 (all tests pass)", check2_detail)  # noqa: E501
+    print_result(
+        2, check2_ok, "Pytest test_assets.py exits 0 (all tests pass)", check2_detail
+    )  # noqa: E501
     if check2_ok:
         passed_count += 1
 
@@ -199,9 +202,7 @@ def main() -> None:
         if not check3_ok:
             detail_parts = []
             if not entry_count_ok:
-                detail_parts.append(
-                    f"only {len(manifest_data)} entries (expected 23+)"
-                )
+                detail_parts.append(f"only {len(manifest_data)} entries (expected 23+)")
             if not all_fields_valid and first_invalid_key is not None:
                 detail_parts.append(
                     f"invalid field types in entry '{first_invalid_key}'"
@@ -243,7 +244,11 @@ def main() -> None:
         for key in ALL_EXPECTED_KEYS:
             try:
                 surface = asset_mgr.get_sprite(key)
-                if surface is None or surface.get_width() <= 0 or surface.get_height() <= 0:  # noqa: E501
+                if (
+                    surface is None
+                    or surface.get_width() <= 0
+                    or surface.get_height() <= 0
+                ):  # noqa: E501
                     all_sprites_ok = False
                     failing_key = key
                     break
@@ -316,7 +321,11 @@ def main() -> None:
     for cat_name, sample_key in category_samples.items():
         try:
             sample_surface = asset_mgr.get_sprite(sample_key)
-            if sample_surface is None or sample_surface.get_width() <= 0 or sample_surface.get_height() <= 0:  # noqa: E501
+            if (
+                sample_surface is None
+                or sample_surface.get_width() <= 0
+                or sample_surface.get_height() <= 0
+            ):  # noqa: E501
                 check5_ok = False
                 check5_failing_category = cat_name
                 break
@@ -328,7 +337,9 @@ def main() -> None:
 
     if not check5_ok:
         if check5_failing_category is not None:
-            check5_detail = f"Category '{check5_failing_category}' returned invalid surface"  # noqa: E501
+            check5_detail = (
+                f"Category '{check5_failing_category}' returned invalid surface"  # noqa: E501
+            )
     else:
         check5_detail = None
 
@@ -374,9 +385,7 @@ def main() -> None:
 
     try:
         # Create a temporary manifest pointing to a nonexistent sprite file.
-        with tempfile.NamedTemporaryFile(
-            mode="w", suffix=".json", delete=False
-        ) as tmp:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as tmp:
             temp_manifest_path = tmp.name
             json.dump(
                 {
@@ -409,9 +418,7 @@ def main() -> None:
                 )
         except ManifestMissingError:
             check7_ok = False
-            check7_detail = (
-                "ManifestMissingError raised instead of AssetLoadError"
-            )
+            check7_detail = "ManifestMissingError raised instead of AssetLoadError"
     except Exception as exc:  # noqa: BLE001
         check7_ok = False
         check7_detail = f"Unexpected error during Check 7 setup: {exc}"

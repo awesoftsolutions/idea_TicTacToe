@@ -12,6 +12,10 @@ Module-level constants define sprite positioning for the TeamSelectScene layout.
 # - Sprint 4, Task 2 — TeamSelectScene + render_speech_bubble
 # - Sprint 4, Task 3 — GameScene class
 # - Sprint 4, Task 4 — CelebrationScene class
+# - Sprint 5 — GameScene effect wiring (PopInAnimation, SparkleBurst,
+#   WiggleAnimation, OccupiedCellWobble, LastMoveHighlight,
+#   ParticleSystem draw); CelebrationScene effect wiring (ConfettiRain,
+#   WinningTrail)
 
 from __future__ import annotations
 
